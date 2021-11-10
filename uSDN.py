@@ -13,7 +13,6 @@ parser.add_argument('--save_path', default='_sparse')
 args = parser.parse_args()
 
 os.environ['CUDA_VISIBLE_DEVICES']= args.cuda
-tf.logging.set_verbosity(tf.logging.ERROR)
 
 def main():
     # config = tf.ConfigProto(device_count={'GPU':8})

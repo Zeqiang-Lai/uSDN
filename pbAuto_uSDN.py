@@ -1,19 +1,11 @@
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+import tf_slim as slim
+
 import numpy as np
-import math
-# import matplotlib.pyplot as plt
-import scipy.io as sio
-import random
-import scipy.misc
 import os
-from tensorflow.python.training import saver
-import tensorflow.contrib.layers as ly
 from os.path import join as pjoin
 from numpy import *
-import numpy.matlib
-import scipy.ndimage
-import csv
-
 
 class betapan(object):
     def __init__(self, input, lr_rate, p_rate, nLRlevel, nHRlevel, epoch, is_adam,
@@ -71,55 +63,55 @@ class betapan(object):
         with tf.variable_scope('lr_hsi_uniform') as scope:
             if reuse:
                 tf.get_variable_scope().reuse_variables()
-            layer_11 = tf.contrib.layers.fully_connected(layer_1, self.nLRlevel[0], activation_fn=None)
+            layer_11 = tf.layers.dense(layer_1, self.nLRlevel[0], activation=None)
             stack_layer_11 = tf.concat([x,layer_11], 1)
-            layer_12 = tf.contrib.layers.fully_connected(stack_layer_11, self.nLRlevel[1], activation_fn=None)
+            layer_12 = tf.layers.dense(stack_layer_11, self.nLRlevel[1], activation=None)
             stack_layer_12 = tf.concat([stack_layer_11, layer_12], 1)
-            layer_13 = tf.contrib.layers.fully_connected(stack_layer_12, self.nLRlevel[2], activation_fn=None)
+            layer_13 = tf.layers.dense(stack_layer_12, self.nLRlevel[2], activation=None)
             stack_layer_13 = tf.concat([stack_layer_12, layer_13], 1)
-            layer_14 = tf.contrib.layers.fully_connected(stack_layer_13, self.nLRlevel[3], activation_fn=None)
+            layer_14 = tf.layers.dense(stack_layer_13, self.nLRlevel[3], activation=None)
             stack_layer_14 = tf.concat([stack_layer_13, layer_14], 1)
 
-            uniform = tf.contrib.layers.fully_connected(stack_layer_14, self.num, activation_fn=None)
+            uniform = tf.layers.dense(stack_layer_14, self.num, activation=None)
         return layer_1, uniform
 
     def encoder_uniform_msi(self,x,reuse=False):
         with tf.variable_scope('hr_msi_uniform') as scope:
             if reuse:
                 tf.get_variable_scope().reuse_variables()
-            layer_11 = tf.contrib.layers.fully_connected(x, self.nLRlevel[0], activation_fn=None)
+            layer_11 = tf.layers.dense(x, self.nLRlevel[0], activation=None)
             stack_layer_11 = tf.concat([x,layer_11], 1)
-            layer_12 = tf.contrib.layers.fully_connected(stack_layer_11, self.nLRlevel[1], activation_fn=None)
+            layer_12 = tf.layers.dense(stack_layer_11, self.nLRlevel[1], activation=None)
             stack_layer_12 = tf.concat([stack_layer_11, layer_12], 1)
-            layer_13 = tf.contrib.layers.fully_connected(stack_layer_12, self.nLRlevel[2], activation_fn=None)
+            layer_13 = tf.layers.dense(stack_layer_12, self.nLRlevel[2], activation=None)
             stack_layer_13 = tf.concat([stack_layer_12, layer_13], 1)
-            layer_14 = tf.contrib.layers.fully_connected(stack_layer_13, self.nLRlevel[3], activation_fn=None)
+            layer_14 = tf.layers.dense(stack_layer_13, self.nLRlevel[3], activation=None)
             stack_layer_14 = tf.concat([stack_layer_13, layer_14], 1)
-            # layer_15 = tf.contrib.layers.fully_connected(stack_layer_14, self.nLRlevel[3], activation_fn=None)
+            # layer_15 = tf.layers.dense(stack_layer_14, self.nLRlevel[3], activation=None)
             # stack_layer_15 = tf.concat([stack_layer_14, layer_15], 1)
-            uniform = tf.contrib.layers.fully_connected(stack_layer_14, self.num, activation_fn=None)
+            uniform = tf.layers.dense(stack_layer_14, self.num, activation=None)
         return layer_11, uniform
 
     def encoder_beta_hsi(self,x,reuse=False):
         with tf.variable_scope('lr_hsi_beta') as scope:
             if reuse:
                 tf.get_variable_scope().reuse_variables()
-            layer_21 = tf.contrib.layers.fully_connected(x, self.nLRlevel[0], activation_fn=None)
+            layer_21 = tf.layers.dense(x, self.nLRlevel[0], activation=None)
             stack_layer_21 = tf.concat([x,layer_21], 1)
-            layer_22 = tf.contrib.layers.fully_connected(stack_layer_21, self.nLRlevel[1], activation_fn=None)
+            layer_22 = tf.layers.dense(stack_layer_21, self.nLRlevel[1], activation=None)
             stack_layer_22 = tf.concat([layer_22, stack_layer_21], 1)
-            layer_32 = tf.contrib.layers.fully_connected(stack_layer_22, 1, activation_fn=None)
+            layer_32 = tf.layers.dense(stack_layer_22, 1, activation=None)
         return layer_32
 
     def encoder_beta_msi(self,x,reuse=False):
         with tf.variable_scope('hr_msi_beta') as scope:
             if reuse:
                 tf.get_variable_scope().reuse_variables()
-            layer_21 = tf.contrib.layers.fully_connected(x, self.nLRlevel[0], activation_fn=None)
+            layer_21 = tf.layers.dense(x, self.nLRlevel[0], activation=None)
             stack_layer_21 = tf.concat([x,layer_21], 1)
-            layer_22 = tf.contrib.layers.fully_connected(stack_layer_21, self.nLRlevel[1], activation_fn=None)
+            layer_22 = tf.layers.dense(stack_layer_21, self.nLRlevel[1], activation=None)
             stack_layer_22 = tf.concat([layer_22, stack_layer_21], 1)
-            layer_32 = tf.contrib.layers.fully_connected(stack_layer_22, 1, activation_fn=None)
+            layer_32 = tf.layers.dense(stack_layer_22, 1, activation=None)
         return layer_32
 
     def encoder_vsamples_hsi(self, x, hsize, reuse=False):
@@ -235,7 +227,7 @@ class betapan(object):
         theta_beta_lrhsi = tf.get_collection(
             tf.GraphKeys.TRAINABLE_VARIABLES, scope='lr_hsi_beta')
         counter_lrhsi = tf.Variable(trainable=False, initial_value=0, dtype=tf.int32)
-        opt_lrhsi = ly.optimize_loss(loss=lrhsi_loss, learning_rate=self.initlrate,
+        opt_lrhsi = slim.optimize_loss(loss=lrhsi_loss, learning_rate=self.initlrate,
                                  optimizer=tf.train.AdamOptimizer if self.is_adam is True else tf.train.RMSPropOptimizer,
                                  variables=theta_basic_decoder+theta_uniform_lrhsi+theta_beta_lrhsi,global_step=counter_lrhsi)
 
@@ -263,7 +255,7 @@ class betapan(object):
         error_init = msi_h  - self.hr_msi_h
         msih_init_loss = tf.reduce_mean(tf.pow(error_init, 2))
         counter_init = tf.Variable(trainable=False, initial_value=0, dtype=tf.int32)
-        opt_init = ly.optimize_loss(loss=msih_init_loss, learning_rate=self.initlrate,
+        opt_init = slim.optimize_loss(loss=msih_init_loss, learning_rate=self.initlrate,
                                        optimizer=tf.train.AdamOptimizer if self.is_adam is True else tf.train.RMSPropOptimizer,
                                        variables=theta_uniform_hrmsi+theta_beta_hrmsi,
                                        global_step=counter_init)
@@ -276,7 +268,7 @@ class betapan(object):
         angle = tf.reduce_mean(tf.acos(tf.div(nom_top, (nom_base + eps))))
         angle_loss = tf.div(angle,3.1416)  # spectral loss
         counter_angle = tf.Variable(trainable=False, initial_value=0, dtype=tf.int32)
-        opt_angle = ly.optimize_loss(loss=angle_loss, learning_rate=self.initlrate,
+        opt_angle = slim.optimize_loss(loss=angle_loss, learning_rate=self.initlrate,
                                        optimizer=tf.train.AdamOptimizer if self.is_adam is True else tf.train.RMSPropOptimizer,
                                        variables=theta_uniform_hrmsi+theta_beta_hrmsi,
                                        global_step=counter_angle)
@@ -287,7 +279,7 @@ class betapan(object):
 
 
         counter_hrmsi = tf.Variable(trainable=False, initial_value=0, dtype=tf.int32)
-        opt_hrmsi = ly.optimize_loss(loss=hrmsi_loss, learning_rate=self.initlrate,
+        opt_hrmsi = slim.optimize_loss(loss=hrmsi_loss, learning_rate=self.initlrate,
                                optimizer=tf.train.AdamOptimizer if self.is_adam is True else tf.train.RMSPropOptimizer,
                                variables= theta_uniform_hrmsi+theta_beta_hrmsi,
                                global_step=counter_hrmsi)

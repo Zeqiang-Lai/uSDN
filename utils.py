@@ -13,7 +13,7 @@ def readData(filename,num=10):
                                            'dimLR', 'dimHR', 'srf','srfactor',
                                            'colLR','meanLR', 'reducedLR',
                                            'sphere','num'],
-                                   verbose=False)
+                                   )
 
     data.hyperLR = np.array(input['hyperLR']).astype(np.float32)
     data.multiHR = np.array(input['multiHR']).astype(np.float32)
